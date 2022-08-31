@@ -4,11 +4,9 @@ import time
 import pandas as pd
 import numpy as np
 from aioconsole import ainput
-from functions import Functions
+from functions import get_ID, get_JID, get_neighbors
 from messages_manager import MessagesManager
 from settings import ECO_TIMER, TABLE_TIMER
-
-global interval
 
 """
 Roberto Castillo - 18546
@@ -16,6 +14,8 @@ Roberto Castillo - 18546
 Client class 
 
 >"""
+
+global interval
 
 class Client(slixmpp.ClientXMPP):
 
@@ -25,19 +25,19 @@ class Client(slixmpp.ClientXMPP):
 
         self.is_logged = False
         self.jid = jid
+        self.names_file = ''
+        self.topo_file = ''
         self.nickName = ''
-        self.useNamesFile = ''
-        self.useTopoFile = ''
         self.use_status = 'Activo'
-        self.next_door = list()
-        self.next_doorTimeSend = None
-        self.bench = None
+        self.neighbors = list()
+        self.neighborsTimeSend = None
+        self.table = None
 
         if not login:
             self.add_event_handler("register", self.register)
         
         # Event handler for some important functions
-        self.add_event_handler("start", self.start)
+        self.add_event_handler("session_start", self.session_start)
         self.add_event_handler("message", self.message)
 
         #Setting all necessary plugins
@@ -56,24 +56,24 @@ class Client(slixmpp.ClientXMPP):
         self.register_plugin('xep_0363')
 
     # Function to the second menu in the application
-    async def start(self, event):
+    async def session_start(self, event):
         self.send_presence(pstatus=self.use_status)
         await self.get_roster()
         
-        self.useTopoFile = 'D:\\Documents\\Semestre022022\\Redes\\LAB3-4-REDES\\topot-demo.txt'
-        self.useNamesFile = 'D:\\Documents\\Semestre022022\\Redes\\LAB3-4-REDES\\names-demo.txt'
+        self.topo_file = 'D:\\Documents\\Semestre022022\\Redes\\LAB3-4-REDES\\topo-demo.txt'
+        self.names_file = 'D:\\Documents\\Semestre022022\\Redes\\LAB3-4-REDES\\names-demo.txt'
         
-        self.nickName = Functions.useGetID(names_file=self.useNamesFile, JID=self.jid)
-        self.next_door = Functions.useGetNeighbors(topology_file=self.useTopoFile, ID=self.nickName)
-        self.next_doorTimeSend = np.zeros(len(self.next_door))
+        self.nickName = get_ID(names_file=self.names_file, JID=self.jid)
+        self.neighbors = get_neighbors(topology_file=self.topo_file, ID=self.nickName)
+        self.neighborsTimeSend = np.zeros(len(self.neighbors))
         
-        self.bench = pd.DataFrame(index=['neighbour', 'distance'], columns=self.next_door + [self.nickName])
-        self.bench.loc['distance'] = np.inf        
-        self.bench.at['distance', self.nickName] = 0
+        self.table = pd.DataFrame(index=['neighbour', 'distance'], columns=self.neighbors + [self.nickName])
+        self.table.loc['distance'] = np.inf        
+        self.table.at['distance', self.nickName] = 0
 
-        MessagesManager.distpatchEco()
-        self.schedule('distpatchEco', ECO_TIMER, MessagesManager.distpatchEco, repeat=True)
-        self.schedule('dispatchTable', TABLE_TIMER, MessagesManager.dispatchTable, repeat=True)
+        self.send_eco()
+        self.schedule('send_eco', ECO_TIMER, self.send_eco, repeat=True)
+        self.schedule('send_table', TABLE_TIMER, self.send_table, repeat=True)
 
         self.is_logged = True
         second_menu = 0
@@ -83,6 +83,7 @@ class Client(slixmpp.ClientXMPP):
                 second_menu = int(await ainput(""" 
 
 Choose the number of the option you want to do:
+
 1. Send a direct message
 2. Logout
 
@@ -94,20 +95,20 @@ Choose the number of the option you want to do:
             self.send_presence(pstatus=self.use_status)
             await self.get_roster()
             
-            # Dependind on the option selected, the function will be called from its own class
             if(second_menu == 1):
                 await MessagesManager.dispatchMessage()
 
             elif(second_menu == 2):
-                print("Cerrando sesión...")
+                print("Login out...")
             
             elif(second_menu != 0):
                 print("Choose a valid option")
         
-        self.cancel_schedule('distpatchEco')
-        self.cancel_schedule('dispatchTable')
+        self.cancel_schedule('send_eco')
+        self.cancel_schedule('send_table')
         self.disconnect()
 
+    # Function to register a new user
     async def register(self, iq):
         note = self.Iq()
         note['type'] = 'set'
@@ -116,25 +117,25 @@ Choose the number of the option you want to do:
 
         try:
             await note.send()
-            print("Cuenta creada!")
+            print("You have created your account!")
         except:
-            print("Error al crear cuenta, intenta con cambiar el nombre del usuario")
+            print("Something happened creating your account, check your credentials")
             self.disconnect()
-    # Function to recieve messages, if the message is from a group, it will be printed in the group, if not, it will be printed as a direct message
+
+    # Function to recieve messages and notifications
     def message(self, note):
         if note['type'] == 'chat':
             message = json.loads(note['body'])
             if message["recipientNode"] == self.jid:        
-                print("---------------New Notification----------------------")
+                print("----------------Notification----------------------")
                 print(json.dumps(message, indent=4, sort_keys=True))
-                print("--------------------------------------------------")
             else:
                 message["jumps"] = message["jumps"] + 1
                 message["nodesList"].append(self.jid)
                 self.send_message(
-                        mto=Functions.useGetJID(
-                            names_file=self.useNamesFile, 
-                            ID=self.bench[Functions.useGetID(names_file=self.useNamesFile, JID=message["recipientNode"])]['neighbour']
+                        mto=get_JID(
+                            names_file=self.names_file, 
+                            ID=self.table[get_ID(names_file=self.names_file, JID=message["recipientNode"])]['neighbour']
                             ),
                         mbody=json.dumps(message),
                         mtype='chat')
@@ -156,21 +157,46 @@ Choose the number of the option you want to do:
                                 mbody=json.dumps(message),
                                 mtype='normal')
                 else:   
-                    self.bench.at['distance', message["recipientNode"]] = (time.time() - message["sendTime"]) / 2
-                    self.bench.at['neighbour', message["recipientNode"]] = message["recipientNode"]     
+                    self.table.at['distance', message["recipientNode"]] = (time.time() - message["sendTime"]) / 2
+                    self.table.at['neighbour', message["recipientNode"]] = message["recipientNode"]     
 
 
             elif message['type'] == 'table':
                 table = message["table"]
                 senderNode = message["senderNode"]
                 for node in table.keys():
+                    # Adds the sender node to the nodesList
                     if node != self.nickName:
-                        if node not in self.bench.columns:
-                            self.bench.at['neighbour', node] = ''
-                            self.bench.at['distance', node] = np.inf
-                        d = min((self.bench.at['distance', senderNode] + table[node]), self.bench.at['distance', node])
-                        if d != self.bench.at['distance', node]:
-                            self.bench.at['distance', node] = d
-                            self.bench.at['neighbour', node] = senderNode
+                        if node not in self.table.columns:
+                            self.table.at['neighbour', node] = ''
+                            self.table.at['distance', node] = np.inf
+                        #Check if the sender node is a neighbor of the node
+                        d = min((self.table.at['distance', senderNode] + table[node]), self.table.at['distance', node])
+                        if d != self.table.at['distance', node]:
+                            self.table.at['distance', node] = d
+                            self.table.at['neighbour', node] = senderNode
+
+    # Function to send eco messages
+    def send_eco(self):
+        for neighbour in self.neighbors:
+            note = {}
+            note["type"] = 'ecoSend'
+            note["senderNode"] = self.nickName
+            note["recipientNode"] = neighbour
+            note["sendTime"] = time.time()
+            self.send_message(mto=get_JID(names_file=self.names_file, ID=neighbour),
+                        mbody=json.dumps(note),
+                        mtype='normal')
+    #function to send table messages
+    def send_table(self):
+        for neighbour in self.neighbors:
+            note = {}
+            note["type"] = 'table'
+            note["senderNode"] = self.nickName
+            note["recipientNode"] = neighbour
+            note["table"] = self.table.loc['distance'].to_dict()
+            self.send_message(mto=get_JID(names_file=self.names_file, ID=neighbour),
+                        mbody=json.dumps(note),
+                        mtype='normal') 
 
         

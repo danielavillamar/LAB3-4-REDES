@@ -41,21 +41,21 @@ Choose the number of the option you want to do:
             
             if(mainMenu == 1):
                 # Registering the user
-                jid = str(input("JID: "))
-                password = str(getpass.getpass("Contraseña: "))
+                jid = str(input("User: "))
+                password = str(getpass.getpass("Password: "))
                 xmpp = Client(jid, password, login=False)         
                 xmpp.connect()
                 xmpp.process(forever=False)
 
             elif(mainMenu == 2):
-                # Logging in the user
-                jid = str(input("JID: "))
-                password = str(getpass.getpass("Contraseña: "))
+                # Logging in the User
+                jid = str(input("User: "))
+                password = str(getpass.getpass("Password: "))
                 xmpp = Client(jid, password)
                 xmpp.connect()
                 xmpp.process(forever=False)
                 if(not xmpp.is_logged):
-                    print("No se pudo iniciar sesión, revisa tus credenciales")
+                    print("Can't login, plese check your credentials")
                     xmpp.disconnect()
 
             elif(mainMenu == 3):
