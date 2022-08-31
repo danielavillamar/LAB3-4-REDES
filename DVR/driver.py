@@ -12,7 +12,7 @@ Driver program for the XMPP client
 debugging = False
 
 if __name__ == '__main__':
-    # Debbuging mode, if it is True, all functions will be debugged correctly
+     # Debbuging mode, if it is True, all functions will be debugged correctly
     if debugging:
 
         useLogin = logging.getLogger()
@@ -37,24 +37,25 @@ Choose the number of the option you want to do:
 2. Login
 3. Exit
 
->"""))      
+>"""))
+            
             if(mainMenu == 1):
                 # Registering the user
-                jid = str(input("Email: "))
-                password = str(getpass.getpass("Password: "))
+                jid = str(input("JID: "))
+                password = str(getpass.getpass("Contraseña: "))
                 xmpp = Client(jid, password, login=False)         
                 xmpp.connect()
                 xmpp.process(forever=False)
 
             elif(mainMenu == 2):
                 # Logging in the user
-                jid = str(input("Email: "))
-                password = str(getpass.getpass("Password: "))
+                jid = str(input("JID: "))
+                password = str(getpass.getpass("Contraseña: "))
                 xmpp = Client(jid, password)
                 xmpp.connect()
                 xmpp.process(forever=False)
-                if(not xmpp.logged):
-                    print("Can't login, plese check your email")	
+                if(not xmpp.is_logged):
+                    print("No se pudo iniciar sesión, revisa tus credenciales")
                     xmpp.disconnect()
 
             elif(mainMenu == 3):
