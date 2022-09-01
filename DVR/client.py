@@ -5,7 +5,6 @@ import pandas as pd
 import numpy as np
 from aioconsole import ainput
 from functions import get_ID, get_JID, get_neighbors
-from messages_manager import MessagesManager
 from settings import ECO_TIMER, TABLE_TIMER
 
 """
