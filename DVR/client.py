@@ -4,6 +4,7 @@ import time
 import pandas as pd
 import numpy as np
 from aioconsole import ainput
+from messages_manager import MessagesManager
 from functions import get_ID, get_JID, get_neighbors
 from settings import ECO_TIMER, TABLE_TIMER
 
@@ -59,8 +60,8 @@ class Client(slixmpp.ClientXMPP):
         self.send_presence(pstatus=self.use_status)
         await self.get_roster()
         
-        self.topo_file = 'D:\\Documents\\Semestre022022\\Redes\\LAB3-4-REDES\\topo-demo.txt'
-        self.names_file = 'D:\\Documents\\Semestre022022\\Redes\\LAB3-4-REDES\\names-demo.txt'
+        self.topo_file = '\\topo-demo.txt'
+        self.names_file = '\\names-demo.txt'
         
         self.nickName = get_ID(names_file=self.names_file, JID=self.jid)
         self.neighbors = get_neighbors(topology_file=self.topo_file, ID=self.nickName)
@@ -95,7 +96,7 @@ Choose the number of the option you want to do:
             await self.get_roster()
             
             if(second_menu == 1):
-                await self.dispatchMessage()
+                await MessagesManager.dispatchMessage(self)
 
             elif(second_menu == 2):
                 print("Login out...")
@@ -197,30 +198,5 @@ Choose the number of the option you want to do:
             self.send_message(mto=get_JID(names_file=self.names_file, ID=neighbour),
                         mbody=json.dumps(note),
                         mtype='normal') 
-
-    # Function to send a message to a contact
-    async def dispatchMessage(self):
-
-        contact = str(await ainput("Email of the user you want to send a message: "))
-        print("Mensaje:")
-        message = str(await ainput(">")) 
-
-        try:
-            recipientNode = get_ID(names_file=self.names_file, JID=contact)
-            if(recipientNode in self.table.columns and self.table[recipientNode]['neighbour'] is not np.nan and self.table[recipientNode]['distance'] is not np.inf):
-                note = {}
-                note["senderNode"] = self.jid
-                note["recipientNode"] = contact
-                note["jumps"] = 1
-                note["distance"] = self.table[recipientNode]['distance']
-                note["nodesList"] = [self.jid]
-                note["message"] = message
-                self.send_message(mto=get_JID(names_file=self.names_file, ID=self.table[recipientNode]['neighbour']),
-                                mbody=json.dumps(note),
-                                mtype='chat')
-            else:
-                print("Message sent.")
-        except:
-            print("User does not exist in your nodes")
 
         
