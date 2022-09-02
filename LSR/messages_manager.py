@@ -27,6 +27,6 @@ class MessagesManager:
                                 mbody=json.dumps(note),
                                 mtype='chat')
             else:
-                print("Message can not be sent to this user.")
+                print("Message sent.")
         except:
             print("User does not exist in your nodes")
