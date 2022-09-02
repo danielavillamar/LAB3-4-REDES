@@ -65,8 +65,6 @@ class Client(slixmpp.ClientXMPP):
         self.table.loc['distance'] = np.inf
         self.table.at['distance', self.nickName] = 0
 
-
-       
         self.send_eco()
         self.schedule('send_eco', ECO_TIMER, self.send_eco, repeat=True)
         self.schedule('send_table', TABLE_TIMER, self.send_table, repeat=True)
@@ -139,6 +137,7 @@ Choose the number of the option you want to do:
                     mtype='chat')
 
         elif note['type'] == 'normal':
+            print(message)
             message = json.loads(note['body'])
             if message['type'] == 'ecoSend':
                 message['type'] = 'ecoResponse'
@@ -159,12 +158,18 @@ Choose the number of the option you want to do:
                     self.table.at['neighbour', message["recipientNode"]
                                   ] = message["recipientNode"]
 
+            
             elif message['type'] == 'table':
                 table = message["table"]
                 senderNode = message["senderNode"]
                 timetolive = message["TTL"]
+                print(message)
+                print("TTL IS")
+                print(timetolive)
                 if(timetolive <= TTL):
                     timetolive = timetolive + 1
+                    print("TTL NOW")
+                    print(timetolive)
                     for neighbour in self.neighbors:
                         if(senderNode != neighbour):
                             note = {}
@@ -174,9 +179,9 @@ Choose the number of the option you want to do:
                             note["table"] = message["table"]
                             note["TTL"] = 0 + timetolive
                             self.send_message(mto=get_JID(names_file=self.names_file, ID=neighbour),
-                                            mbody=json.dumps(note),
-                                            mtype='normal')
-                    
+                                              mbody=json.dumps(note),
+                                              mtype='normal')
+
                 for node in table.keys():
                     # Adds the sender node to the nodesList
                     if node != self.nickName:
@@ -189,7 +194,8 @@ Choose the number of the option you want to do:
                         if d != self.table.at['distance', node]:
                             self.table.at['distance', node] = d
                             self.table.at['neighbour', node] = senderNode
-                self.table = self.table.reindex(sorted(self.table.columns), axis=1)
+                self.table = self.table.reindex(
+                    sorted(self.table.columns), axis=1)
 
     # Function to send eco messages
     def send_eco(self):
