@@ -54,6 +54,7 @@ class Client(slixmpp.ClientXMPP):
 
         self.topo_file = 'topo-demo.txt'
         self.names_file = 'names-demo.txt'
+        self.timetolive = 0;
 
         self.nickName = get_ID(names_file=self.names_file, JID=self.jid)
         self.neighbors = get_neighbors(
@@ -127,6 +128,7 @@ Choose the number of the option you want to do:
             else:
                 message["jumps"] = message["jumps"] + 1
                 message["nodesList"].append(self.jid)
+                message["TTL"] = message["TTL"] + 1
                 self.send_message(
                     mto=get_JID(
                         names_file=self.names_file,
@@ -137,7 +139,6 @@ Choose the number of the option you want to do:
                     mtype='chat')
 
         elif note['type'] == 'normal':
-            print(message)
             message = json.loads(note['body'])
             if message['type'] == 'ecoSend':
                 message['type'] = 'ecoResponse'
@@ -158,18 +159,12 @@ Choose the number of the option you want to do:
                     self.table.at['neighbour', message["recipientNode"]
                                   ] = message["recipientNode"]
 
-            
             elif message['type'] == 'table':
                 table = message["table"]
                 senderNode = message["senderNode"]
                 timetolive = message["TTL"]
-                print(message)
-                print("TTL IS")
-                print(timetolive)
                 if(timetolive <= TTL):
                     timetolive = timetolive + 1
-                    print("TTL NOW")
-                    print(timetolive)
                     for neighbour in self.neighbors:
                         if(senderNode != neighbour):
                             note = {}
@@ -210,14 +205,14 @@ Choose the number of the option you want to do:
                               mtype='normal')
 
     # function to send table messages
-    def send_table(self, timetolive):
+    def send_table(self):
         for neighbour in self.neighbors:
             note = {}
             note["type"] = 'table'
             note["senderNode"] = self.nickName
             note["recipientNode"] = neighbour
             note["table"] = self.table.loc['distance'].to_dict()
-            note["TTL"] = 0 + timetolive
+            note["TTL"] = 0 + self.timetolive
             self.send_message(mto=get_JID(names_file=self.names_file, ID=neighbour),
                               mbody=json.dumps(note),
                               mtype='normal')
