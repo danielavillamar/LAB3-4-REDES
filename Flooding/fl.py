@@ -29,7 +29,7 @@ class Client(slixmpp.ClientXMPP):
         self.initialize(jid, password, algoritmo, nodo, nodes, names, graph)
 
         self.schedule(name="echo", callback=self.echo, seconds=10, repeat=True)
-        self.schedule(name="update", callback=self.tree_update, seconds=10, repeat=True)
+        #self.schedule(name="update", callback=self.tree_update, seconds=10, repeat=True)
         
         self.connected_event = asyncio.Event()
         self.presences_received = asyncio.Event()
@@ -112,7 +112,7 @@ class Client(slixmpp.ClientXMPP):
         self.nodes = nodes
 
 class Tree():
-    def newTree(self, topologia, names):
+    def tree_update(self, topologia, names):
         G = nx.Graph()
         # New nodos
         for key, value in names["config"].items():
@@ -156,12 +156,12 @@ async def main(xmpp: Client):
             mainexecute = False
             xmpp.disconnect()
         else:
-            pass
+            pass 
 
-
-if __name__ == "__main__":
-    lector_topo = open("topologia.txt", "r", encoding="utf8")
-    lector_names = open("names.txt", "r", encoding="utf8")
+def mainfl():
+    # if __name__ == '__main__':
+    lector_topo = open("D:\\Documents\\Semestre022022\Redes\\LAB3-4-REDES\\Flooding\\topo-demo.txt", "r", encoding="utf8")
+    lector_names = open("D:\\Documents\\Semestre022022\\Redes\\LAB3-4-REDES\\Flooding\\names-demo.txt", "r", encoding="utf8")
     topo_string = lector_topo.read()
     names_string = lector_names.read()
     topologia = yaml.load(topo_string, Loader=yaml.FullLoader)
@@ -181,7 +181,7 @@ if __name__ == "__main__":
             nodo = key
             nodes = topologia["config"][key]
 
-    graph = tree.newTree(topologia, names)
+    graph = tree.tree_update(topologia, names)
     xmpp = Client(jid, pswd, alg, nodo, nodes, names["config"], graph)
     xmpp.connect() 
     xmpp.loop.run_until_complete(xmpp.connected_event.wait())

@@ -11,8 +11,9 @@ Driver program for the XMPP client
 
 debugging = False
 
-if __name__ == '__main__':
-     # Debbuging mode, if it is True, all functions will be debugged correctly
+def maindvr():
+    # if __name__ == '__main__':
+        # Debbuging mode, if it is True, all functions will be debugged correctly
     if debugging:
 
         useLogin = logging.getLogger()

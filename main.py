@@ -1,8 +1,12 @@
 import getpass
 import logging
 import sys
-sys.path.insert(0, 'D:\Development\lab34\LSR')
+sys.path.insert(0, 'D:\Documents\Semestre022022\Redes\LAB3-4-REDES\LSR')
+sys.path.insert(0, 'D:\Documents\Semestre022022\Redes\LAB3-4-REDES\DVR')
+sys.path.insert(0, 'D:\Documents\Semestre022022\Redes\LAB3-4-REDES\Flooding')
 from lsr import mainlsr
+from dvr import maindvr
+from fl import mainfl
 
 debugging = False
 
@@ -37,8 +41,10 @@ Choose the number of the option you want to do:
     
     if(mainMenu == 1):
         print("FLOODING")
+        mainfl()
     elif(mainMenu == 2):
         print("DISTANCE VECTOR ROUTING")
+        maindvr()
     elif(mainMenu == 3):
         print("LINK STATE ROUTING")
         mainlsr()
