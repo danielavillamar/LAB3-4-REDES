@@ -1,9 +1,9 @@
 import getpass
 import logging
 import sys
-sys.path.insert(0, 'D:\Documents\Semestre022022\Redes\LAB3-4-REDES\LSR')
-sys.path.insert(0, 'D:\Documents\Semestre022022\Redes\LAB3-4-REDES\DVR')
-sys.path.insert(0, 'D:\Documents\Semestre022022\Redes\LAB3-4-REDES\Flooding')
+sys.path.insert(0, 'LSR')
+sys.path.insert(0, 'DVR')
+sys.path.insert(0, 'Flooding')
 from lsr import mainlsr
 from dvr import maindvr
 from fl import mainfl

@@ -52,8 +52,8 @@ class Client(slixmpp.ClientXMPP):
         self.send_presence(pstatus=self.use_status)
         await self.get_roster()
 
-        self.topo_file = 'D:\\Documents\\Semestre022022\\Redes\\LAB3-4-REDES\\topo-demo.txt'
-        self.names_file = 'D:\\Documents\\Semestre022022\\Redes\\LAB3-4-REDES\\names-demo.txt'
+        self.topo_file = 'topo-demo.txt'
+        self.names_file = 'names-demo.txt'
         self.timetolive = 0
 
         self.nickName = get_ID(names_file=self.names_file, JID=self.jid)

@@ -160,8 +160,8 @@ async def main(xmpp: Client):
 
 def mainfl():
     # if __name__ == '__main__':
-    lector_topo = open("D:\\Documents\\Semestre022022\Redes\\LAB3-4-REDES\\Flooding\\topo-demo.txt", "r", encoding="utf8")
-    lector_names = open("D:\\Documents\\Semestre022022\\Redes\\LAB3-4-REDES\\Flooding\\names-demo.txt", "r", encoding="utf8")
+    lector_topo = open("topo-demo.txt", "r", encoding="utf8")
+    lector_names = open("names-demo.txt", "r", encoding="utf8")
     topo_string = lector_topo.read()
     names_string = lector_names.read()
     topologia = yaml.load(topo_string, Loader=yaml.FullLoader)

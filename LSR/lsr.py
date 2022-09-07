@@ -44,7 +44,7 @@ def mainlsr():
                     # Logging in the User
                     jid = str(input("User: "))
                     password = str(getpass.getpass("Password: "))
-                    xmpp = Client(jid+"@alumchat.fun", password)
+                    xmpp = Client(jid, password)
                     xmpp.connect()
                     xmpp.process(forever=False)
                     if(not xmpp.is_logged):
