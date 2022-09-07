@@ -1,0 +1,1 @@
+{"type":"names", "config":{"A": "axia@alumchat.fun", "B": "axib@alumchat.fun", "C": "axic@alumchat.fun", "D": "axid@alumchat.fun", "E": "axie@alumchat.fun"} }
